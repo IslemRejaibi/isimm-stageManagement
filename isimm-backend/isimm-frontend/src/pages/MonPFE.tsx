@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 
 interface UserProfile {
@@ -12,6 +13,12 @@ interface RapportInfo {
   nomFichier: string | null;
   taille: number | null;
   dateDepot: string | null;
+}
+
+interface HistoriqueStatut {
+  statut: string;
+  date: string;
+  commentaire?: string;
 }
 
 interface PFE {
@@ -30,6 +37,7 @@ interface PFE {
   mention?: string | null;
   rapportIntermediaire?: RapportInfo;
   rapportFinal?: RapportInfo;
+  historiqueStatuts?: HistoriqueStatut[];
 }
 
 const STATUT_LABELS: Record<string, string> = {
@@ -137,7 +145,7 @@ const MonPFE = () => {
       {
         label: 'Soutenance',
         description: 'Présentation devant le jury',
-        status: pfe.statut === 'validé' ? 'pending' : 'pending',
+        status: pfe.dateSoutenance ? 'done' : 'pending',
         date: pfe.dateSoutenance ? soutenanceDate : undefined,
       },
     ];
@@ -185,13 +193,40 @@ const MonPFE = () => {
               </h1>
               <p className="mt-2 text-slate-500">Année universitaire {pfe.anneeUniversitaire}</p>
             </div>
-            <div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <span className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
                 {statutLabel}
               </span>
+              <Link
+                to={`/pfe/${pfe._id}`}
+                className="inline-flex items-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Voir les détails
+              </Link>
             </div>
           </div>
         </header>
+
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm text-slate-500">Statut du PFE</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900">{statutLabel}</p>
+          </div>
+          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm text-slate-500">Type de projet</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900 capitalize">{pfe.type}</p>
+          </div>
+          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm text-slate-500">Spécialité</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900">{pfe.specialite}</p>
+          </div>
+          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm text-slate-500">Soutenance</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900">
+              {pfe.dateSoutenance ? new Date(pfe.dateSoutenance).toLocaleDateString('fr-FR') : 'À définir'}
+            </p>
+          </div>
+        </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
           <div className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
@@ -199,6 +234,12 @@ const MonPFE = () => {
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">Informations du projet</h2>
               </div>
+              <Link
+                to={`/pfe/${pfe._id}`}
+                className="inline-flex items-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Voir les détails
+              </Link>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
@@ -313,20 +354,27 @@ const MonPFE = () => {
           <div className="space-y-6">
             <div className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
               <h2 className="text-xl font-semibold text-slate-900">Dépôt des livrables</h2>
-              <div className="mt-6 space-y-4">
-                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6">
-                  <div className="flex items-start justify-between gap-4">
+              <div className="mt-6 grid gap-4">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">Rapport intermédiaire</p>
-                      <p className="mt-2 text-sm text-slate-500">Document présentant l'avancement du projet</p>
+                      <p className="mt-2 text-sm text-slate-500">Document présentant l'avancement du projet.</p>
+                      {pfe.rapportIntermediaire?.url && (
+                        <p className="mt-2 text-sm text-slate-600">{pfe.rapportIntermediaire.nomFichier}</p>
+                      )}
                     </div>
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-800">
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                      pfe.rapportIntermediaire?.url
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-amber-100 text-amber-800'
+                    }`}>
                       {pfe.rapportIntermediaire?.url ? 'Soumis' : 'À soumettre'}
                     </span>
                   </div>
                   <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 text-center">
                     <p className="text-sm text-slate-500">Glissez-déposez ou cliquez</p>
-                    <p className="mt-1 text-xs text-slate-400">PDF uniquement, max 10 Mo</p>
+                    <p className="mt-1 text-xs text-slate-400">PDF uniquement, max 50 Mo</p>
                     <label className="mt-6 inline-flex cursor-pointer rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
                       <input
                         type="file"
@@ -338,20 +386,27 @@ const MonPFE = () => {
                         }}
                         disabled={uploading}
                       />
-                      {uploading ? 'Téléversement...' : 'Soumettre'}
+                      {uploading ? 'Téléversement...' : 'Téléverser'}
                     </label>
                     {uploadError && <p className="mt-3 text-sm text-red-600">{uploadError}</p>}
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6">
-                  <div className="flex items-start justify-between gap-4">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">Rapport final</p>
-                      <p className="mt-2 text-sm text-slate-500">Document final complet du PFE</p>
+                      <p className="mt-2 text-sm text-slate-500">Document final complet du PFE.</p>
+                      {pfe.rapportFinal?.url && (
+                        <p className="mt-2 text-sm text-slate-600">{pfe.rapportFinal.nomFichier}</p>
+                      )}
                     </div>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                      {pfe.rapportFinal?.url ? 'Préparé' : 'À soumettre'}
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                      pfe.rapportFinal?.url
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {pfe.rapportFinal?.url ? 'Soumis' : 'À soumettre'}
                     </span>
                   </div>
                   <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 text-center">
@@ -368,11 +423,28 @@ const MonPFE = () => {
                         }}
                         disabled={uploading}
                       />
-                      {uploading ? 'Téléversement...' : 'Soumettre'}
+                      {uploading ? 'Téléversement...' : 'Téléverser'}
                     </label>
                     {uploadError && <p className="mt-3 text-sm text-red-600">{uploadError}</p>}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+              <h2 className="text-xl font-semibold text-slate-900">Commentaires encadrant</h2>
+              <div className="mt-6 space-y-4 text-slate-600">
+                {pfe.historiqueStatuts && pfe.historiqueStatuts.length > 0 ? (
+                  pfe.historiqueStatuts.map((item, index) => (
+                    <div key={index} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-sm font-semibold text-slate-900">{item.statut}</p>
+                      <p className="mt-2 text-sm text-slate-500">{item.commentaire || 'Aucun commentaire'}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.24em] text-slate-400">{new Date(item.date).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-500">Aucun commentaire disponible pour le moment.</p>
+                )}
               </div>
             </div>
           </div>

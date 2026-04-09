@@ -46,6 +46,51 @@ const Sidebar = () => {
         >
           Mon PFE
         </NavLink>
+        <NavLink
+          to="/documents"
+          className={({ isActive }) =>
+            `block rounded-md px-3 py-2 text-sm font-medium ${
+              isActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`
+          }
+        >
+          Documents
+        </NavLink>
+        <NavLink
+          to="/notifications"
+          className={({ isActive }) =>
+            `block rounded-md px-3 py-2 text-sm font-medium ${
+              isActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`
+          }
+        >
+          Notifications
+        </NavLink>
+
+        <div className="mt-6 border-t border-slate-800 pt-6 text-slate-400">
+          <p className="mb-2 px-3 text-xs uppercase tracking-[0.24em] text-slate-500">Compte</p>
+          <NavLink
+            to="/profil"
+            className={({ isActive }) =>
+              `block rounded-md px-3 py-2 text-sm font-medium ${
+                isActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'
+              }`
+            }
+          >
+            Mon profil
+          </NavLink>
+          <NavLink
+            to="/parametres"
+            className={({ isActive }) =>
+              `block rounded-md px-3 py-2 text-sm font-medium ${
+                isActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'
+              }`
+            }
+          >
+            Paramètres
+          </NavLink>
+        </div>
+
         <button
           type="button"
           onClick={handleLogout}

@@ -1,3 +1,58 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg-primary: #f8fafc;
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #475569;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --card-alt: #f8fafc;
+  --button-bg: #0f172a;
+  --button-text: #ffffff;
+}
+
+html.dark {
+  color-scheme: dark;
+  --bg-primary: #0f172a;
+  --surface: #111827;
+  --surface-alt: #1f2937;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #cbd5e1;
+  --border: #334155;
+  --card: #111827;
+  --card-alt: #1f2937;
+  --button-bg: #1d4ed8;
+  --button-text: #ffffff;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body, button, input, select, textarea {
+  color: inherit;
+}
+
+.bg-white { background-color: var(--surface) !important; }
+.bg-slate-100 { background-color: var(--bg-primary) !important; }
+.bg-slate-50 { background-color: var(--surface-alt) !important; }
+.bg-slate-900 { background-color: var(--button-bg) !important; }
+.border-slate-200 { border-color: var(--border) !important; }
+.ring-slate-200 { box-shadow: 0 0 0 1px var(--border) inset !important; }
+.text-slate-900 { color: var(--text-primary) !important; }
+.text-slate-500 { color: var(--text-secondary) !important; }
+.text-slate-600 { color: var(--text-muted) !important; }
+.bg-blue-600 { background-color: var(--button-bg) !important; }
+.text-white { color: var(--button-text) !important; }
