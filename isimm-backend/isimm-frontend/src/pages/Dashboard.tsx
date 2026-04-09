@@ -4,11 +4,14 @@ import StageCard from '../components/StageCard';
 
 interface Stage {
   _id: string;
-  title: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  company: string;
+  titre: string;
+  description?: string;
+  entreprise: {
+    nom: string;
+  };
+  dateDebut: string;
+  dateFin: string;
+  statut: string;
 }
 
 const Dashboard = () => {
@@ -44,9 +47,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Mes Stages
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Mes Stages</h1>
 
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
@@ -66,38 +67,38 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full bg-white rounded-lg shadow">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+        <div className="mt-8 overflow-x-auto rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Titre
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Entreprise
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Début
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Fin
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-200 bg-white">
               {stages.map((stage) => (
-                <tr key={stage._id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {stage.title}
+                <tr key={stage._id} className="hover:bg-slate-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                    {stage.titre}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {stage.company}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    {stage.entreprise?.nom || '-'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(stage.startDate).toLocaleDateString('fr-FR')}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    {new Date(stage.dateDebut).toLocaleDateString('fr-FR')}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(stage.endDate).toLocaleDateString('fr-FR')}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    {new Date(stage.dateFin).toLocaleDateString('fr-FR')}
                   </td>
                 </tr>
               ))}

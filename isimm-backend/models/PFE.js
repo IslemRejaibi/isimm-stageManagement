@@ -134,20 +134,41 @@ const PFESchema = new mongoose.Schema(
       default: null,
     },
 
-    // ── Rapport PDF ──────────────────────────────────────────────────────────
-    rapport: {
+    // ── Rapport intermédiaire PDF ───────────────────────────────────────────
+    rapportIntermediaire: {
       url: {
         type: String,
         trim: true,
         default: null,
       },
       nomFichier: {
-        type: String,   // ex : "rapport_pfe_benali_2026.pdf"
+        type: String,
         trim: true,
         default: null,
       },
       taille: {
-        type: Number,   // taille en octets
+        type: Number,
+        default: null,
+      },
+      dateDepot: {
+        type: Date,
+        default: null,
+      },
+    },
+    // ── Rapport final PDF ─────────────────────────────────────────────────────
+    rapportFinal: {
+      url: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      nomFichier: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      taille: {
+        type: Number,
         default: null,
       },
       dateDepot: {

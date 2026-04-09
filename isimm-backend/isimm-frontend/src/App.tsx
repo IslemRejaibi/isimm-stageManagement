@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import MesStages from './pages/MesStages';
+import MonPFE from './pages/MonPFE';
 import PrivateRoute from './components/PrivateRoute';
 import Sidebar from './components/Sidebar';
 import './App.css';
@@ -30,6 +31,14 @@ function App() {
             element={
               <PrivateRoute>
                 <MesStages />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/pfe"
+            element={
+              <PrivateRoute>
+                <MonPFE />
               </PrivateRoute>
             }
           />

@@ -1,7 +1,35 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+const mongoose = require('mongoose');
 const PFE = require('../models/PFE');
+const User = require('../models/User');
 const { auth, autoriser } = require('../middleware/auth.middleware');
+
+const uploadDir = path.join(__dirname, '..', 'uploads', 'pfe');
+fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const extension = path.extname(file.originalname);
+    const safeType = req.body.type === 'final' ? 'final' : 'intermediaire';
+    cb(null, `${req.params.id}-${safeType}${extension}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Seuls les fichiers PDF sont autorisés'));
+    }
+    cb(null, true);
+  },
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/pfe
@@ -89,15 +117,44 @@ router.post('/', auth, autoriser('etudiant', 'admin'), async (req, res) => {
       titre,
       description,
       encadrant,
+      encadrantEmail,
       specialite,
       type,
       anneeUniversitaire,
     } = req.body;
 
     // Vérifier les champs obligatoires
-    if (!titre || !description || !encadrant || !specialite) {
+    if (!titre || !description || (!encadrant && !encadrantEmail) || !specialite) {
       return res.status(400).json({
         message: 'Titre, description, encadrant et spécialité sont obligatoires',
+      });
+    }
+
+    // Résoudre l'encadrant : id ou email
+    let encadrantId = encadrant;
+    if (!encadrantId && encadrantEmail) {
+      const user = await User.findOne({
+        email: encadrantEmail.toLowerCase(),
+        role: { $in: ['enseignant', 'tuteur'] },
+      });
+      if (!user) {
+        return res.status(400).json({
+          message: 'Aucun encadrant trouvé avec cet email',
+        });
+      }
+      encadrantId = user._id;
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(encadrantId)) {
+      return res.status(400).json({
+        message: 'Identifiant d\'encadrant invalide',
+      });
+    }
+
+    const encadrantUser = await User.findById(encadrantId);
+    if (!encadrantUser || !['enseignant', 'tuteur'].includes(encadrantUser.role)) {
+      return res.status(400).json({
+        message: 'Encadrant invalide ou introuvable',
       });
     }
 
@@ -109,7 +166,7 @@ router.post('/', auth, autoriser('etudiant', 'admin'), async (req, res) => {
     const pfe = await PFE.create({
       titre,
       description,
-      encadrant,
+      encadrant: encadrantId,
       specialite,
       type:               type              || 'académique',
       anneeUniversitaire: anneeUniversitaire || undefined,
@@ -138,6 +195,59 @@ router.post('/', auth, autoriser('etudiant', 'admin'), async (req, res) => {
     }
     console.error('Erreur POST /pfe :', err);
     res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/pfe/:id/rapport
+// Téléversement d'un rapport PDF de PFE
+// Body: form-data { type: 'intermediaire'|'final', file }
+// Accessible : étudiant propriétaire ou admin
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/:id/rapport', auth, upload.single('file'), async (req, res) => {
+  try {
+    const { type } = req.body;
+
+    if (!['intermediaire', 'final'].includes(type)) {
+      return res.status(400).json({ message: 'Type de rapport invalide' });
+    }
+
+    const pfe = await PFE.findById(req.params.id);
+    if (!pfe) {
+      return res.status(404).json({ message: 'PFE non trouvé' });
+    }
+
+    if (req.user.role === 'etudiant' && pfe.etudiant.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Accès refusé' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Fichier PDF requis' });
+    }
+
+    const rapportData = {
+      url: `/uploads/pfe/${req.file.filename}`,
+      nomFichier: req.file.originalname,
+      taille: req.file.size,
+      dateDepot: new Date(),
+    };
+
+    if (type === 'intermediaire') {
+      pfe.rapportIntermediaire = rapportData;
+    } else {
+      pfe.rapportFinal = rapportData;
+    }
+
+    await pfe.save();
+    await pfe.populate('encadrant', 'nom prenom email');
+
+    res.status(200).json({
+      message: `Rapport ${type === 'intermediaire' ? 'intermédiaire' : 'final'} reçu`,
+      pfe,
+    });
+  } catch (err) {
+    console.error('Erreur PUT /pfe/:id/rapport :', err);
+    res.status(500).json({ message: err.message || 'Erreur serveur' });
   }
 });
 

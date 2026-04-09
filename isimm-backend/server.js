@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -24,6 +25,7 @@ const pfeRoutes   = require('./routes/pfe.routes');
 app.use('/api/auth',   authRoutes);
 app.use('/api/stages', stageRoutes);
 app.use('/api/pfe',    pfeRoutes);
+app.use('/uploads',    express.static(path.join(__dirname, 'uploads')));
 
 // ─── Route de santé ───────────────────────────────────────────────────────────
 // Tester que le serveur tourne : GET http://localhost:5000/api/health

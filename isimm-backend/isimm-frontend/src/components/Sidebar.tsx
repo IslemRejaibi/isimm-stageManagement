@@ -36,6 +36,16 @@ const Sidebar = () => {
         >
           Mes stages
         </NavLink>
+        <NavLink
+          to="/pfe"
+          className={({ isActive }) =>
+            `block rounded-md px-3 py-2 text-sm font-medium ${
+              isActive ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`
+          }
+        >
+          Mon PFE
+        </NavLink>
         <button
           type="button"
           onClick={handleLogout}
