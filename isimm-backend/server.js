@@ -12,9 +12,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // pour les formulaires
 
 // ─── Import des routes ────────────────────────────────────────────────────────
-const authRoutes  = require('./routes/auth.routes');
-const stageRoutes = require('./routes/stage.routes');
-const pfeRoutes   = require('./routes/pfe.routes');
+const authRoutes      = require('./routes/auth.routes');
+const stageRoutes     = require('./routes/stage.routes');
+const pfeRoutes       = require('./routes/pfe.routes');
+const documentsRoutes = require('./routes/documents.routes');
 
 // ─── Branchement des routes ───────────────────────────────────────────────────
 //
@@ -22,10 +23,11 @@ const pfeRoutes   = require('./routes/pfe.routes');
 // Toutes les routes stage → /api/stages, /api/stages/:id ...
 // Toutes les routes pfe   → /api/pfe,    /api/pfe/:id    ...
 //
-app.use('/api/auth',   authRoutes);
-app.use('/api/stages', stageRoutes);
-app.use('/api/pfe',    pfeRoutes);
-app.use('/uploads',    express.static(path.join(__dirname, 'uploads')));
+app.use('/api/auth',      authRoutes);
+app.use('/api/stages',    stageRoutes);
+app.use('/api/pfe',       pfeRoutes);
+app.use('/api/documents', documentsRoutes);
+app.use('/uploads',       express.static(path.join(__dirname, 'uploads')));
 
 // ─── Route de santé ───────────────────────────────────────────────────────────
 // Tester que le serveur tourne : GET http://localhost:5000/api/health

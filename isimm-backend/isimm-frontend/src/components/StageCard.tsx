@@ -20,33 +20,41 @@ const STATUT_LABELS: Record<string, string> = {
   refusé: 'Refusé',
 };
 
+const STATUS_CLASS: Record<string, string> = {
+  en_attente: 'status-en_attente',
+  en_cours: 'status-en_cours',
+  terminé: 'status-termine',
+  validé: 'status-validé',
+  refusé: 'status-refusé',
+};
+
 const StageCard = ({ stage }: StageCardProps) => {
+  const statusClass = STATUS_CLASS[stage.statut] || 'status-invalid';
+
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm transition hover:shadow-lg">
+    <div className="app-card p-6 transition hover:shadow-lg">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">{stage.titre}</h3>
-          <p className="text-sm text-slate-500 mb-4 line-clamp-2">
+          <h3 className="text-xl font-semibold text-heading mb-2">{stage.titre}</h3>
+          <p className="text-sm text-muted mb-4 line-clamp-2">
             {stage.description || 'Pas de description fournie.'}
           </p>
         </div>
-        <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
-          {STATUT_LABELS[stage.statut] || stage.statut}
-        </span>
+        <span className={`status-pill ${statusClass}`}>{STATUT_LABELS[stage.statut] || stage.statut}</span>
       </div>
 
-      <div className="mt-4 space-y-3 text-sm text-slate-600">
+      <div className="mt-4 space-y-3 text-sm text-muted">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">Entreprise</p>
-          <p className="font-medium text-slate-900">{stage.entreprise?.nom || '-'}</p>
+          <p className="text-xs uppercase tracking-wide text-muted">Entreprise</p>
+          <p className="font-medium text-heading">{stage.entreprise?.nom || '-'}</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">Début</p>
+            <p className="text-xs uppercase tracking-wide text-muted">Début</p>
             <p>{new Date(stage.dateDebut).toLocaleDateString('fr-FR')}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">Fin</p>
+            <p className="text-xs uppercase tracking-wide text-muted">Fin</p>
             <p>{new Date(stage.dateFin).toLocaleDateString('fr-FR')}</p>
           </div>
         </div>

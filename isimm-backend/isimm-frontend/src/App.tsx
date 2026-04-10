@@ -12,104 +12,35 @@ import Parametres from './pages/Parametres';
 import StageDetails from './pages/StageDetails';
 import CreateStage from './pages/CreateStage';
 import PrivateRoute from './components/PrivateRoute';
-import Sidebar from './components/Sidebar';
+import Layout from './components/Layout';
 import './App.css';
 
 function App() {
-  const token = localStorage.getItem('token');
-
   return (
-    <div className="flex">
-      {token && <Sidebar />}
-      <div className="flex-1">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/stages"
-            element={
-              <PrivateRoute>
-                <MesStages />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/stages/new"
-            element={
-              <PrivateRoute>
-                <CreateStage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/stages/:id"
-            element={
-              <PrivateRoute>
-                <StageDetails />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pfe"
-            element={
-              <PrivateRoute>
-                <MonPFE />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pfe/:id"
-            element={
-              <PrivateRoute>
-                <PfeDetails />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/documents"
-            element={
-              <PrivateRoute>
-                <Documents />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <PrivateRoute>
-                <Notifications />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profil"
-            element={
-              <PrivateRoute>
-                <MonProfil />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/parametres"
-            element={
-              <PrivateRoute>
-                <Parametres />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Routes>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route
+        element={
+          <PrivateRoute>
+            <Layout />
+          </PrivateRoute>
+        }
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/stages" element={<MesStages />} />
+        <Route path="/stages/new" element={<CreateStage />} />
+        <Route path="/stages/:id" element={<StageDetails />} />
+        <Route path="/pfe" element={<MonPFE />} />
+        <Route path="/pfe/:id" element={<PfeDetails />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/profil" element={<MonProfil />} />
+        <Route path="/parametres" element={<Parametres />} />
+      </Route>
+      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
+    </Routes>
   );
 }
 

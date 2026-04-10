@@ -153,16 +153,16 @@ const MonPFE = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="text-lg text-slate-600">Chargement du PFE...</div>
+      <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
+        <div className="text-lg text-muted">Chargement du PFE...</div>
       </div>
     );
   }
 
   if (!pfe) {
     return (
-      <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
-        <div className="mx-auto max-w-4xl rounded-3xl bg-white p-10 shadow-sm ring-1 ring-slate-200">
+      <div className="min-h-screen bg-app px-4 py-10">
+        <div className="mx-auto max-w-4xl app-card p-10">
           <h1 className="text-3xl font-semibold text-slate-900">Mon PFE</h1>
           {error ? (
             <p className="mt-4 text-red-600">{error}</p>
@@ -175,14 +175,14 @@ const MonPFE = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
+    <div className="min-h-screen bg-app px-4 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
         {error && (
           <div className="rounded-3xl bg-red-50 p-6 text-red-700 shadow-sm ring-1 ring-red-200">
             {error}
           </div>
         )}
-        <header className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <header className="page-header">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500">
@@ -208,21 +208,21 @@ const MonPFE = () => {
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Statut du PFE</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{statutLabel}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Statut du PFE</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{statutLabel}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Type de projet</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900 capitalize">{pfe.type}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Type de projet</p>
+            <p className="mt-4 text-3xl font-semibold text-heading capitalize">{pfe.type}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Spécialité</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{pfe.specialite}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Spécialité</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{pfe.specialite}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Soutenance</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Soutenance</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">
               {pfe.dateSoutenance ? new Date(pfe.dateSoutenance).toLocaleDateString('fr-FR') : 'À définir'}
             </p>
           </div>

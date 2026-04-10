@@ -52,16 +52,16 @@ const StageDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="text-lg text-slate-600">Chargement du stage...</div>
+      <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
+        <div className="text-lg text-muted">Chargement du stage...</div>
       </div>
     );
   }
 
   if (!stage) {
     return (
-      <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
-        <div className="mx-auto max-w-4xl rounded-3xl bg-white p-10 shadow-sm ring-1 ring-slate-200">
+      <div className="min-h-screen bg-app px-4 py-10">
+        <div className="mx-auto max-w-4xl app-card p-10">
           <h1 className="text-3xl font-semibold text-slate-900">Détails du stage</h1>
           <p className="mt-4 text-slate-600">Stage introuvable.</p>
           {error && <p className="mt-4 text-sm text-red-700">{error}</p>}
@@ -71,9 +71,9 @@ const StageDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
+    <div className="min-h-screen bg-app px-4 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
-        <div className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <div className="page-header">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500">Détails du stage</p>
@@ -86,7 +86,7 @@ const StageDetails = () => {
 
         <div className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
           <div className="space-y-6">
-            <section className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <section className="app-card p-8">
               <h2 className="text-xl font-semibold text-slate-900">Description du stage</h2>
               <p className="mt-4 text-slate-600">{stage.description || 'Aucune description fournie.'}</p>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -109,7 +109,7 @@ const StageDetails = () => {
               </div>
             </section>
 
-            <section className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <section className="app-card p-8">
               <h2 className="text-xl font-semibold text-slate-900">Documents</h2>
               <div className="mt-6 space-y-4">
                 {stage.rapport?.url && (
@@ -132,7 +132,7 @@ const StageDetails = () => {
           </div>
 
           <aside className="space-y-6">
-            <section className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <section className="app-card p-8">
               <h2 className="text-xl font-semibold text-slate-900">Encadrant entreprise</h2>
               <p className="mt-4 text-slate-600">{stage.encadrantEntreprise?.nom || 'Non renseigné'}</p>
               <p className="mt-2 text-sm text-slate-500">{stage.encadrantEntreprise?.poste || 'Poste non renseigné'}</p>
@@ -141,7 +141,7 @@ const StageDetails = () => {
               )}
             </section>
 
-            <section className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <section className="app-card p-8">
               <h2 className="text-xl font-semibold text-slate-900">Informations entreprise</h2>
               <div className="mt-4 space-y-3 text-slate-600">
                 <p><strong>Nom :</strong> {stage.entreprise.nom}</p>
@@ -152,7 +152,7 @@ const StageDetails = () => {
               </div>
             </section>
 
-            <section className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <section className="app-card p-8">
               <h2 className="text-xl font-semibold text-slate-900">Historique</h2>
               <div className="mt-6 space-y-4">
                 {stage.historiqueStatuts.length === 0 && <p className="text-slate-600">Aucun historique disponible.</p>}

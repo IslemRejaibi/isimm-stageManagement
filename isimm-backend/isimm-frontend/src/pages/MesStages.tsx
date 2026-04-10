@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext.tsx';
 import api from '../services/api';
 
 interface Stage {
@@ -36,6 +37,7 @@ const FILTER_STATUTS = ['tous', 'en_attente', 'en_cours', 'validé', 'refusé'];
 const FILTER_TYPES = ['tous', 'stage_initiation', 'stage_perfectionnement', 'stage_pfe'];
 
 const MesStages = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [stages, setStages] = useState<Stage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,26 +104,26 @@ const MesStages = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-slate-600">Chargement...</div>
+      <div className="flex items-center justify-center min-h-screen bg-app px-4 py-10">
+        <div className="text-xl text-muted">Chargement...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
+    <div className="min-h-screen bg-app px-4 py-10">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Mes stages</h1>
-            <p className="mt-2 text-sm text-slate-600">Consultez et gérez vos demandes de stage.</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{t('stages.title')}</h1>
+            <p className="mt-2 text-sm text-slate-600">{t('stages.subtitle')}</p>
           </div>
           <button
             type="button"
             onClick={() => navigate('/stages/new')}
             className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
-            Nouvelle demande
+            {t('stages.newRequest')}
           </button>
         </div>
 
@@ -133,19 +135,19 @@ const MesStages = () => {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Total des stages</p>
+            <p className="text-sm text-slate-500">{t('stages.total')}</p>
             <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.total}</p>
           </div>
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Validés</p>
+            <p className="text-sm text-slate-500">{t('stages.validated')}</p>
             <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.validés}</p>
           </div>
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">En attente</p>
+            <p className="text-sm text-slate-500">{t('stages.pending')}</p>
             <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.enAttente}</p>
           </div>
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">En cours</p>
+            <p className="text-sm text-slate-500">{t('stages.ongoing')}</p>
             <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.enCours}</p>
           </div>
         </div>
@@ -153,41 +155,41 @@ const MesStages = () => {
         <div className="mb-8 grid gap-4 md:grid-cols-[1fr_200px]">
           <input
             type="search"
-            placeholder="Rechercher une entreprise, un titre ou un type..."
+            placeholder={t('stages.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm"
+            className="input-field"
           />
           <div className="grid gap-3 sm:grid-cols-2">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-3xl border border-slate-300 bg-white px-4 py-3 outline-none shadow-sm"
+              className="input-field"
             >
               {FILTER_STATUTS.map((status) => (
-                <option key={status} value={status}>{status === 'tous' ? 'Tous les statuts' : STATUT_LABELS[status] || status}</option>
+                <option key={status} value={status}>{status === 'tous' ? t('stages.allStatuses') : STATUT_LABELS[status] || status}</option>
               ))}
             </select>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="rounded-3xl border border-slate-300 bg-white px-4 py-3 outline-none shadow-sm"
+              className="input-field"
             >
               {FILTER_TYPES.map((type) => (
-                <option key={type} value={type}>{type === 'tous' ? 'Tous les types' : TYPE_LABELS[type] || type}</option>
+                <option key={type} value={type}>{type === 'tous' ? t('stages.allTypes') : TYPE_LABELS[type] || type}</option>
               ))}
             </select>
           </div>
         </div>
 
         {filteredStages.length === 0 ? (
-          <div className="rounded-2xl bg-white p-10 text-center text-slate-600 shadow-sm">
-            Aucun stage ne correspond à vos filtres.
+          <div className="app-card p-10 text-center text-muted">
+            {t('stages.noResults')}
           </div>
         ) : (
           <div className="grid gap-6 xl:grid-cols-2">
             {filteredStages.map((stage) => (
-              <div key={stage._id} className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+              <div key={stage._id} className="app-card p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-slate-500">Entreprise</p>
@@ -209,54 +211,84 @@ const MesStages = () => {
                 </div>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   <div>
-                    <p className="text-sm text-slate-500">Rapport de stage</p>
+                    <p className="text-sm text-slate-500">{t('stages.report')}</p>
                     <p className="mt-2 text-base text-slate-900">
                       {stage.rapport?.url ? (
-                        <a href={stage.rapport.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          {stage.rapport.nomFichier || 'Télécharger'}
-                        </a>
+                        <div className="flex flex-col gap-2">
+                          <a href={stage.rapport.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {stage.rapport.nomFichier || t('stages.reportUpload')}
+                          </a>
+                          <label className="inline-flex cursor-pointer items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
+                            {t('stages.reportReplace')}
+                            <input
+                              type="file"
+                              hidden
+                              accept=".pdf,.doc,.docx"
+                              onChange={(e) => e.target.files && handleFileUpload(stage._id, 'rapport', e.target.files[0])}
+                              disabled={uploadLoading === stage._id}
+                            />
+                          </label>
+                        </div>
                       ) : (
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => e.target.files && handleFileUpload(stage._id, 'rapport', e.target.files[0])}
-                          disabled={uploadLoading === stage._id}
-                          className="text-sm"
-                        />
+                        <label className="inline-flex cursor-pointer items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                          {t('stages.reportUpload')}
+                          <input
+                            type="file"
+                            hidden
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => e.target.files && handleFileUpload(stage._id, 'rapport', e.target.files[0])}
+                            disabled={uploadLoading === stage._id}
+                          />
+                        </label>
                       )}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Attestation</p>
+                    <p className="text-sm text-slate-500">{t('stages.attestation')}</p>
                     <p className="mt-2 text-base text-slate-900">
                       {stage.attestation?.url ? (
-                        <a href={stage.attestation.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                          Télécharger
-                        </a>
+                        <div className="flex flex-col gap-2">
+                          <a href={stage.attestation.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {t('stages.attestation')}
+                          </a>
+                          <label className="inline-flex cursor-pointer items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
+                            {t('stages.attestationReplace')}
+                            <input
+                              type="file"
+                              hidden
+                              accept=".pdf,.doc,.docx"
+                              onChange={(e) => e.target.files && handleFileUpload(stage._id, 'attestation', e.target.files[0])}
+                              disabled={uploadLoading === stage._id}
+                            />
+                          </label>
+                        </div>
                       ) : (
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => e.target.files && handleFileUpload(stage._id, 'attestation', e.target.files[0])}
-                          disabled={uploadLoading === stage._id}
-                          className="text-sm"
-                        />
+                        <label className="inline-flex cursor-pointer items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                          {t('stages.attestationUpload')}
+                          <input
+                            type="file"
+                            hidden
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => e.target.files && handleFileUpload(stage._id, 'attestation', e.target.files[0])}
+                            disabled={uploadLoading === stage._id}
+                          />
+                        </label>
                       )}
                     </p>
                   </div>
                 </div>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-3xl bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Début</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{t('stages.start')}</p>
                     <p className="mt-2 text-sm font-semibold text-slate-900">{new Date(stage.dateDebut).toLocaleDateString('fr-FR')}</p>
                   </div>
                   <div className="rounded-3xl bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Fin</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{t('stages.end')}</p>
                     <p className="mt-2 text-sm font-semibold text-slate-900">{new Date(stage.dateFin).toLocaleDateString('fr-FR')}</p>
                   </div>
                 </div>
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm text-slate-500">Tuteur: {stage.tuteur ? `${stage.tuteur.prenom} ${stage.tuteur.nom}` : 'Non renseigné'}</p>
+                  <p className="text-sm text-slate-500">{t('stages.tutor')}: {stage.tuteur ? `${stage.tuteur.prenom} ${stage.tuteur.nom}` : t('stages.noTutor')}</p>
                   <Link
                     to={`/stages/${stage._id}`}
                     className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"

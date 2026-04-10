@@ -91,29 +91,29 @@ const Notifications = () => {
   }), [notifications]);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
+    <div className="min-h-screen bg-app px-4 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
-        <header className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <header className="page-header">
           <h1 className="text-3xl font-semibold text-slate-900">Notifications</h1>
           <p className="mt-2 text-slate-500">Consultez les dernières informations sur vos stages et votre PFE.</p>
         </header>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Total</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.total}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Total</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{counts.total}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Non lues</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.nonLu}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Non lues</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{counts.nonLu}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Stages</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.stage}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Stages</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{counts.stage}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">PFE</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{counts.pfe}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">PFE</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{counts.pfe}</p>
           </div>
         </div>
 

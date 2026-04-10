@@ -203,4 +203,63 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+router.put('/update-profile', auth, async (req, res) => {
+  try {
+    const allowedFields = [
+      'nom',
+      'prenom',
+      'email',
+      'telephone',
+      'numeroEtudiant',
+      'specialite',
+      'niveau',
+      'departement',
+    ];
+
+    const updates = {};
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'Aucune donnée fournie pour la mise à jour' });
+    }
+
+    if (updates.email) {
+      updates.email = updates.email.toLowerCase();
+      const emailExists = await User.findOne({ email: updates.email, _id: { $ne: req.user.id } });
+      if (emailExists) {
+        return res.status(400).json({ message: 'Cet email est déjà utilisé' });
+      }
+    }
+
+    if (updates.numeroEtudiant) {
+      const numeroExists = await User.findOne({ numeroEtudiant: updates.numeroEtudiant, _id: { $ne: req.user.id } });
+      if (numeroExists) {
+        return res.status(400).json({ message: 'Ce numéro étudiant est déjà utilisé' });
+      }
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    Object.assign(user, updates);
+    await user.save();
+
+    res.status(200).json({ user: user.toJSON(), message: 'Profil mis à jour avec succès' });
+  } catch (err) {
+    console.error('Erreur update-profile :', err);
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map((error) => error.message);
+      return res.status(400).json({ message: messages.join(', ') });
+    }
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
+

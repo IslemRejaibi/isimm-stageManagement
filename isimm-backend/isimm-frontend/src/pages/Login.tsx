@@ -31,43 +31,41 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="max-w-md w-full bg-gray-800 rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-white mb-6 text-center">
-          Connexion
-        </h2>
+    <div className="min-h-screen bg-app px-4 py-10">
+      <div className="mx-auto max-w-md rounded-[28px] bg-white p-8 shadow-card border border-soft">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-navy text-xl font-semibold text-white">U</div>
+          <h2 className="text-3xl font-semibold text-heading">Connexion</h2>
+          <p className="mt-2 text-sm text-muted">Accédez à votre espace administratif ISIMM</p>
+        </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-500 text-white rounded-md text-sm">
+          <div className="mb-4 rounded-3xl border border-error/20 bg-error/10 p-4 text-sm text-error">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Email
-            </label>
+            <label className="label-small">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="input-field"
               placeholder="votre@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Mot de passe
-            </label>
+            <label className="label-small">Mot de passe</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="input-field"
               placeholder="••••••••"
             />
           </div>
@@ -75,15 +73,15 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+            className="btn-primary w-full"
           >
             {loading ? 'Connexion en cours...' : 'Se connecter'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-300">
+        <p className="mt-6 text-center text-sm text-muted">
           Pas encore de compte ?{' '}
-          <Link to="/register" className="font-medium text-white hover:text-blue-300">
+          <Link to="/register" className="font-semibold text-navy hover:text-amber">
             S'inscrire
           </Link>
         </p>

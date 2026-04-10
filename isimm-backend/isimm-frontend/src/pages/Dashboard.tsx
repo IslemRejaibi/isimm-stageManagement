@@ -59,16 +59,16 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-100">
-        <div className="text-xl text-slate-600">Chargement...</div>
+      <div className="flex items-center justify-center min-h-screen bg-app px-4 py-10">
+        <div className="text-xl text-muted">Chargement...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8 lg:p-10">
+    <div className="min-h-screen bg-app px-4 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
-        <header className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <header className="page-header">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500">Tableau de bord</p>
@@ -88,21 +88,21 @@ const Dashboard = () => {
         </header>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Total des stages</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.total}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Total des stages</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.total}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">En cours</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.enCours}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">En cours</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.enCours}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Validés</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.valides}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Validés</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.valides}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">En attente</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.attentes}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">En attente</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.attentes}</p>
           </div>
         </div>
 
@@ -126,29 +126,29 @@ const Dashboard = () => {
           </div>
 
           <aside className="space-y-4">
-            <div className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
-              <h2 className="text-xl font-semibold text-slate-900">Aperçu rapide</h2>
+            <div className="app-card p-8">
+              <h2 className="text-xl font-semibold text-heading">Aperçu rapide</h2>
               <div className="mt-6 grid gap-4">
-                <div className="rounded-3xl bg-slate-50 p-5">
-                  <p className="text-sm text-slate-500">Stage validé</p>
-                  <p className="mt-3 text-2xl font-semibold text-slate-900">{stats.valides}</p>
+                <div className="rounded-3xl bg-surface-alt p-5">
+                  <p className="text-sm text-muted">Stage validé</p>
+                  <p className="mt-3 text-2xl font-semibold text-heading">{stats.valides}</p>
                 </div>
-                <div className="rounded-3xl bg-slate-50 p-5">
-                  <p className="text-sm text-slate-500">Stage en cours</p>
-                  <p className="mt-3 text-2xl font-semibold text-slate-900">{stats.enCours}</p>
+                <div className="rounded-3xl bg-surface-alt p-5">
+                  <p className="text-sm text-muted">Stage en cours</p>
+                  <p className="mt-3 text-2xl font-semibold text-heading">{stats.enCours}</p>
                 </div>
-                <div className="rounded-3xl bg-slate-50 p-5">
-                  <p className="text-sm text-slate-500">Demandes en attente</p>
-                  <p className="mt-3 text-2xl font-semibold text-slate-900">{stats.attentes}</p>
+                <div className="rounded-3xl bg-surface-alt p-5">
+                  <p className="text-sm text-muted">Demandes en attente</p>
+                  <p className="mt-3 text-2xl font-semibold text-heading">{stats.attentes}</p>
                 </div>
               </div>
             </div>
             <div className="rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
             <div className="mt-6 space-y-3">
-                <button onClick={() => navigate('/stages')} className="w-full rounded-3xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+                <button onClick={() => navigate('/stages')} className="btn-primary w-full">
                   Voir mes stages
                 </button>
-                <button onClick={() => navigate('/pfe')} className="w-full rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                <button onClick={() => navigate('/pfe')} className="btn-secondary w-full">
                   Accéder à mon PFE
                 </button>
               </div>

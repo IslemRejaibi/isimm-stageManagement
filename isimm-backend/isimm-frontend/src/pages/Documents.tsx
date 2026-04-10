@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import api from '../services/api';
 
 interface DocumentItem {
@@ -15,6 +15,10 @@ const Documents = () => {
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [uploadError, setUploadError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -23,9 +27,14 @@ const Documents = () => {
   const loadDocuments = async () => {
     try {
       setLoading(true);
-      const [stageRes, pfeRes] = await Promise.all([api.get('/stages'), api.get('/pfe')]);
+      const [stageRes, pfeRes, docsRes] = await Promise.all([
+        api.get('/stages'),
+        api.get('/pfe'),
+        api.get('/documents'),
+      ]);
       const stages = stageRes.data.stages || [];
       const pfes = pfeRes.data.pfes || [];
+      const uploadedDocs = docsRes.data.documents || [];
 
       const stageDocs = stages.flatMap((stage: any) => {
         const list = [] as DocumentItem[];
@@ -81,12 +90,49 @@ const Documents = () => {
         return list;
       });
 
-      setDocuments([...stageDocs, ...pfeDocs]);
+      setDocuments([...uploadedDocs, ...stageDocs, ...pfeDocs]);
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Impossible de charger les documents');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+    setUploadMessage('');
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setUploadMessage('Aucun fichier sélectionné.');
+      return;
+    }
+
+    setUploadError('');
+    setUploadMessage(`Téléversement en cours : ${file.name}`);
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await api.post('/documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setUploadMessage(response.data.message || 'Téléversement réussi');
+      await loadDocuments();
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erreur lors du téléversement';
+      setUploadError(message);
+      setUploadMessage('');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -99,17 +145,40 @@ const Documents = () => {
   }, [documents]);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6 lg:p-10">
+    <div className="min-h-screen bg-app px-4 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <header className="page-header flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900">Documents</h1>
             <p className="mt-2 text-slate-500">Gérez vos documents de stage et de PFE.</p>
           </div>
-          <button className="inline-flex items-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-            Téléverser
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleUploadClick}
+              disabled={uploading}
+              className="inline-flex items-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {uploading ? 'Téléversement...' : 'Téléverser'}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
         </header>
+        {uploadMessage && (
+          <div className="rounded-3xl bg-blue-50 p-4 text-blue-700 ring-1 ring-blue-200">
+            {uploadMessage}
+          </div>
+        )}
+        {uploadError && (
+          <div className="rounded-3xl bg-red-50 p-4 text-red-700 ring-1 ring-red-200">
+            {uploadError}
+          </div>
+        )}
 
         {error && (
           <div className="rounded-3xl bg-red-50 p-5 text-red-700 ring-1 ring-red-200">
@@ -118,32 +187,32 @@ const Documents = () => {
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Total documents</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.total}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Total documents</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.total}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Validés</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.valides}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Validés</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.valides}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">En attente</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.enAttente}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">En attente</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.enAttente}</p>
           </div>
-          <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <p className="text-sm text-slate-500">Rejetés</p>
-            <p className="mt-4 text-3xl font-semibold text-slate-900">{stats.rejetes}</p>
+          <div className="app-card p-6">
+            <p className="text-sm text-muted">Rejetés</p>
+            <p className="mt-4 text-3xl font-semibold text-heading">{stats.rejetes}</p>
           </div>
         </div>
 
-        <div className="rounded-[32px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div className="app-card p-6">
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h2 className="text-xl font-semibold text-slate-900">Tous les documents</h2>
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="search"
                 placeholder="Rechercher un document..."
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                className="input-field"
               />
             </div>
           </div>
