@@ -24,7 +24,11 @@ const upload = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== 'application/pdf') {
+    const allowedMimes = ['application/pdf'];
+    const allowedExtensions = ['.pdf'];
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (!allowedMimes.includes(file.mimetype) && !allowedExtensions.includes(fileExtension)) {
       return cb(new Error('Seuls les fichiers PDF sont autorisés'));
     }
     cb(null, true);
@@ -49,11 +53,11 @@ router.get('/', auth, async (req, res) => {
 
     // Filtrage automatique par rôle
     // Étudiant → seulement son PFE
-    // Encadrant → seulement les PFE qu'il encadre
+    // Encadrant / tuteur → seulement les PFE qu'il encadre
     // Admin → tous les PFE
     if (req.user.role === 'etudiant') {
       filtre.etudiant = req.user.id;
-    } else if (req.user.role === 'enseignant') {
+    } else if (['enseignant', 'tuteur'].includes(req.user.role)) {
       filtre.encadrant = req.user.id;
     }
 
@@ -204,7 +208,22 @@ router.post('/', auth, autoriser('etudiant', 'admin'), async (req, res) => {
 // Body: form-data { type: 'intermediaire'|'final', file }
 // Accessible : étudiant propriétaire ou admin
 // ─────────────────────────────────────────────────────────────────────────────
-router.put('/:id/rapport', auth, upload.single('file'), async (req, res) => {
+router.put('/:id/rapport', auth, (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: 'Fichier trop volumineux (max 50 Mo)' });
+        }
+      }
+      if (err.message === 'Seuls les fichiers PDF sont autorisés') {
+        return res.status(400).json({ message: err.message });
+      }
+      return res.status(400).json({ message: 'Erreur lors du téléversement du fichier' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const { type } = req.body;
 
@@ -217,8 +236,14 @@ router.put('/:id/rapport', auth, upload.single('file'), async (req, res) => {
       return res.status(404).json({ message: 'PFE non trouvé' });
     }
 
+    // Un étudiant ne peut uploader que son propre PFE
+    // Un admin peut uploader pour n'importe quel PFE
     if (req.user.role === 'etudiant' && pfe.etudiant.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Accès refusé' });
+    }
+
+    if (req.user.role !== 'etudiant' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Accès refusé — rôle insuffisant' });
     }
 
     if (!req.file) {
@@ -226,7 +251,7 @@ router.put('/:id/rapport', auth, upload.single('file'), async (req, res) => {
     }
 
     const rapportData = {
-      url: `/uploads/pfe/${req.file.filename}`,
+      url: `${req.protocol}://${req.get('host')}/uploads/pfe/${req.file.filename}`,
       nomFichier: req.file.originalname,
       taille: req.file.size,
       dateDepot: new Date(),
@@ -234,8 +259,16 @@ router.put('/:id/rapport', auth, upload.single('file'), async (req, res) => {
 
     if (type === 'intermediaire') {
       pfe.rapportIntermediaire = rapportData;
+      // Si on est à l'étape 2 (Validation de projet), passer à l'étape 3
+      if (pfe.etape === 2) {
+        pfe.etape = 3;
+      }
     } else {
       pfe.rapportFinal = rapportData;
+      // Si on est à l'étape 3 (Rapport intermédiaire), passer à l'étape 4
+      if (pfe.etape === 3) {
+        pfe.etape = 4;
+      }
     }
 
     await pfe.save();
@@ -444,6 +477,59 @@ router.post('/:id/commentaires', auth, async (req, res) => {
 
   } catch (err) {
     console.error('Erreur POST /pfe/:id/commentaires :', err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/pfe/:id/validate
+// Valider un PFE et passer à l'étape suivante
+// Accessible : enseignant, tuteur, admin
+// Body : { }
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/:id/validate', auth, autoriser('enseignant', 'tuteur', 'admin'), async (req, res) => {
+  try {
+    const pfe = await PFE.findById(req.params.id);
+
+    if (!pfe) {
+      return res.status(404).json({ message: 'PFE non trouvé' });
+    }
+
+    // Vérifier que l'utilisateur est l'encadrant ou un admin
+    if (
+      ['enseignant', 'tuteur'].includes(req.user.role) &&
+      pfe.encadrant.toString() !== req.user.id
+    ) {
+      return res.status(403).json({ message: 'Seul l\'encadrant peut valider ce PFE' });
+    }
+
+    // Marquer comme validé par l'encadrant
+    pfe.valideeParEncadrant = true;
+    pfe.dateValidationEncadrant = new Date();
+    pfe.statut = 'validé';
+
+    // Assurer que l'étape est bien initialisée
+    if (pfe.etape === undefined || pfe.etape === null) {
+      pfe.etape = 1;
+    }
+
+    // Passer à l'étape suivante (max 4)
+    if (pfe.etape < 4) {
+      pfe.etape += 1;
+    }
+
+    await pfe.save();
+
+    await pfe.populate('etudiant',  'nom prenom email');
+    await pfe.populate('encadrant', 'nom prenom email');
+
+    res.status(200).json({
+      message: `PFE validé ! Passage à l'étape ${pfe.etape}`,
+      pfe,
+    });
+
+  } catch (err) {
+    console.error('Erreur PUT /pfe/:id/validate :', err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });

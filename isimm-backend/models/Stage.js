@@ -204,15 +204,22 @@ const StageSchema = new mongoose.Schema(
 );
 
 // ─── Validation : dateFin après dateDebut ─────────────────────────────────────
-StageSchema.pre('save', function (next) {
+StageSchema.pre('save', function () {
   if (this.dateDebut && this.dateFin && this.dateFin <= this.dateDebut) {
-    return next(new Error('La date de fin doit être après la date de début'));
+    const validationError = new mongoose.Error.ValidationError(this);
+    validationError.addError(
+      'dateFin',
+      new mongoose.Error.ValidatorError({
+        path: 'dateFin',
+        message: 'La date de fin doit être après la date de début',
+      }),
+    );
+    throw validationError;
   }
-  next();
 });
 
 // ─── Middleware : mention automatique depuis la note ──────────────────────────
-StageSchema.pre('save', function (next) {
+StageSchema.pre('save', function () {
   if (this.isModified('note') && this.note !== null) {
     if      (this.note >= 18) this.mention = 'Excellent';
     else if (this.note >= 16) this.mention = 'Très bien';
@@ -221,7 +228,6 @@ StageSchema.pre('save', function (next) {
     else if (this.note >= 10) this.mention = 'Passable';
     else                      this.mention = null;
   }
-  next();
 });
 
 // ─── Virtuel : durée en semaines ──────────────────────────────────────────────

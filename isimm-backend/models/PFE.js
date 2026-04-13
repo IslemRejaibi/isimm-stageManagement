@@ -198,6 +198,24 @@ const PFESchema = new mongoose.Schema(
       },
     ],
 
+    // ── Étapes et validation ──────────────────────────────────────────────────
+    etape: {
+      type: Number,
+      default: 1,
+      min: 1,
+      max: 4,
+    },
+
+    valideeParEncadrant: {
+      type: Boolean,
+      default: false,
+    },
+
+    dateValidationEncadrant: {
+      type: Date,
+      default: null,
+    },
+
     isArchived: {
       type: Boolean,
       default: false,
@@ -233,7 +251,7 @@ PFESchema.virtual('tailleRapport').get(function () {
 
 // ─── Middleware pre-save : mention automatique ────────────────────────────────
 // Calcule la mention dès qu'une note est enregistrée
-PFESchema.pre('save', function (next) {
+PFESchema.pre('save', function () {
   if (this.isModified('note') && this.note !== null) {
     if (this.note >= 18)      this.mention = 'Excellent';
     else if (this.note >= 16) this.mention = 'Très bien';
@@ -242,7 +260,6 @@ PFESchema.pre('save', function (next) {
     else if (this.note >= 10) this.mention = 'Passable';
     else                      this.mention = null;
   }
-  next();
 });
 
 // ─── Méthode : changer le statut avec historique ──────────────────────────────

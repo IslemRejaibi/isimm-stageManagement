@@ -34,7 +34,18 @@ const Documents = () => {
       ]);
       const stages = stageRes.data.stages || [];
       const pfes = pfeRes.data.pfes || [];
-      const uploadedDocs = docsRes.data.documents || [];
+      const uploadedDocsRaw = docsRes.data.documents || [];
+
+      // Mapper les documents du backend vers la structure DocumentItem
+      const uploadedDocs = uploadedDocsRaw.map((doc: any) => ({
+        id: doc._id,
+        nom: doc.nom,
+        categorie: doc.categorie,
+        stage: doc.stage?.titre || doc.pfe?.titre || 'Document général',
+        date: new Date(doc.createdAt).toLocaleDateString('fr-FR'),
+        statut: 'Validé',
+        taille: `${(doc.taille / 1024 / 1024).toFixed(1)} Mo`,
+      }));
 
       const stageDocs = stages.flatMap((stage: any) => {
         const list = [] as DocumentItem[];
@@ -119,11 +130,7 @@ const Documents = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await api.post('/documents/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post('/documents/upload', formData);
 
       setUploadMessage(response.data.message || 'Téléversement réussi');
       await loadDocuments();

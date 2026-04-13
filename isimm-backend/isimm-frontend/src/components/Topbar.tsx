@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import logo from '../assets/isimm-logo.png';
 
 const breadcrumbLabels: Record<string, string> = {
   dashboard: 'Tableau de bord',
@@ -27,7 +28,7 @@ const Topbar = () => {
           <h1 className="mt-2 text-2xl font-semibold text-heading">{title}</h1>
         </div>
         <div className="flex items-center gap-3 rounded-3xl border border-soft bg-surface px-4 py-2 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-sm font-semibold text-white">U</div>
+          <img src={logo} alt="Logo ISIMM" className="h-11 w-11 rounded-full bg-white object-cover" />
           <div>
             <p className="text-sm font-semibold text-heading">Utilisateur</p>
             <p className="text-xs text-muted">Administratif</p>

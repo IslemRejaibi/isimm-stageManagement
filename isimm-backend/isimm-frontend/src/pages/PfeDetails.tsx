@@ -56,19 +56,31 @@ const PfeDetails = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (id) fetchPfe();
+    if (id) {
+      fetchPfe();
+    }
   }, [id]);
 
-  const fetchPfe = async () => {
+  useEffect(() => {
+    if (!id) return undefined;
+    const intervalId = window.setInterval(() => fetchPfe(true), 5000);
+    return () => window.clearInterval(intervalId);
+  }, [id]);
+
+  const fetchPfe = async (background = false) => {
     try {
-      setLoading(true);
+      if (!background) {
+        setLoading(true);
+      }
       const response = await api.get(`/pfe/${id}`);
       setPfe(response.data.pfe);
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Impossible de charger le PFE');
     } finally {
-      setLoading(false);
+      if (!background) {
+        setLoading(false);
+      }
     }
   };
 
@@ -192,35 +204,35 @@ const PfeDetails = () => {
               <p className="mt-4 text-slate-600">{pfe.description}</p>
             </div>
 
-            <div className="mt-8 rounded-3xl bg-slate-50 p-6">
-              <h3 className="text-lg font-semibold text-slate-900">Documents déposés</h3>
-              <div className="mt-4 space-y-3">
-                {pfe.rapportIntermediaire?.url ? (
-                  <a
-                    href={pfe.rapportIntermediaire.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded-3xl border border-slate-200 bg-white px-5 py-4 text-slate-700 hover:bg-slate-100"
-                  >
-                    Rapport intermédiaire • {pfe.rapportIntermediaire.nomFichier}
-                  </a>
-                ) : (
-                  <p className="text-slate-500">Aucun rapport intermédiaire téléchargé.</p>
-                )}
-                {pfe.rapportFinal?.url ? (
-                  <a
-                    href={pfe.rapportFinal.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded-3xl border border-slate-200 bg-white px-5 py-4 text-slate-700 hover:bg-slate-100"
-                  >
-                    Rapport final • {pfe.rapportFinal.nomFichier}
-                  </a>
-                ) : (
-                  <p className="text-slate-500">Aucun rapport final téléchargé.</p>
-                )}
+              <div className="mt-8 rounded-3xl bg-slate-50 p-6">
+                <h3 className="text-lg font-semibold text-slate-900">Documents déposés</h3>
+                <div className="mt-4 space-y-3">
+                  {pfe.rapportIntermediaire?.url ? (
+                    <a
+                      href={pfe.rapportIntermediaire.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-3xl border border-slate-200 bg-white px-5 py-4 text-slate-700 hover:bg-slate-100"
+                    >
+                      Rapport intermédiaire • {pfe.rapportIntermediaire.nomFichier}
+                    </a>
+                  ) : (
+                    <p className="text-slate-500">Le rapport intermédiaire n'est pas encore disponible.</p>
+                  )}
+                  {pfe.rapportFinal?.url ? (
+                    <a
+                      href={pfe.rapportFinal.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-3xl border border-slate-200 bg-white px-5 py-4 text-slate-700 hover:bg-slate-100"
+                    >
+                      Rapport final • {pfe.rapportFinal.nomFichier}
+                    </a>
+                  ) : (
+                    <p className="text-slate-500">Le rapport final n'est pas encore disponible.</p>
+                  )}
+                </div>
               </div>
-            </div>
           </section>
 
           <aside className="space-y-6">
