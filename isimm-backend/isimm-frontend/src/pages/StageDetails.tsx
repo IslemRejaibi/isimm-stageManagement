@@ -24,10 +24,24 @@ const StageDetails = () => {
   const [stage, setStage] = useState<StageDetailsModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userRole, setUserRole] = useState<'etudiant' | 'tuteur' | 'admin' | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    if (id) fetchStage();
+    if (id) {
+      fetchUserRole();
+      fetchStage();
+    }
   }, [id]);
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await api.get('/auth/me');
+      setUserRole(response.data.user.role);
+    } catch (err: any) {
+      console.warn('Impossible de récupérer le rôle utilisateur', err);
+    }
+  };
 
   const fetchStage = async () => {
     try {
@@ -39,6 +53,23 @@ const StageDetails = () => {
       setError(err.response?.data?.message || 'Impossible de charger les détails du stage');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateStageStatus = async (statut: 'validé' | 'refusé') => {
+    if (!id) return;
+    try {
+      setActionLoading(true);
+      await api.put(`/stages/${id}/statut`, {
+        statut,
+        commentaire: statut === 'validé' ? 'Validation admin' : 'Rejet admin',
+      });
+      await fetchStage();
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erreur lors de la mise à jour du statut');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -80,7 +111,29 @@ const StageDetails = () => {
               <h1 className="mt-3 text-3xl font-semibold text-slate-900">{stage.entreprise.nom} - {stage.type.replace('_', ' ')}</h1>
               <p className="mt-2 text-slate-500">{stage.description || 'Aucune description disponible.'}</p>
             </div>
-            <span className={`rounded-full px-4 py-2 text-sm font-semibold ${statusClass}`}>{stage.statut}</span>
+            <div className="flex flex-wrap items-center gap-3">
+              {userRole === 'admin' && stage.statut === 'en_attente' && (
+                <>
+                  <button
+                    type="button"
+                    disabled={actionLoading}
+                    onClick={() => updateStageStatus('validé')}
+                    className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {actionLoading ? '...' : 'Valider'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={actionLoading}
+                    onClick={() => updateStageStatus('refusé')}
+                    className="rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {actionLoading ? '...' : 'Refuser'}
+                  </button>
+                </>
+              )}
+              <span className={`rounded-full px-4 py-2 text-sm font-semibold ${statusClass}`}>{stage.statut}</span>
+            </div>
           </div>
         </div>
 

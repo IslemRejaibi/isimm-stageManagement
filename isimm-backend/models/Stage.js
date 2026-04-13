@@ -25,7 +25,84 @@ const StageSchema = new mongoose.Schema(
       default: null,
     },
 
-    // ── Entreprise ────────────────────────────────────────────────────────────
+    // ── Détails structurés du stage (Phase 6 - enrichissements) ───────────────
+    detailsStage: {
+      missionsPrevues: {
+        type: String,
+        trim: true,
+        maxlength: [1000, 'Maximum 1000 caractères pour les missions'],
+        default: null,
+      },
+
+      technologiesUtilisees: {
+        type: [String], // Array de technos : ['Node.js', 'React', 'MongoDB', ...]
+        default: [],
+      },
+
+      objectifsPedagogiques: {
+        type: String,
+        trim: true,
+        maxlength: [1000, 'Maximum 1000 caractères pour les objectifs'],
+        default: null,
+      },
+
+      // Compétences à développer
+      competencesVisees: [
+        {
+          competence: String,
+          niveau: {
+            type: String,
+            enum: ['debutant', 'intermediaire', 'avance'],
+            default: 'intermediaire',
+          },
+        },
+      ],
+
+      dureeEstimeeJours: {
+        type: Number,
+        default: null,
+      },
+
+      taillEquipe: {
+        type: Number,
+        default: null,
+      },
+    },
+
+    // ── Lettre de motivation (Phase 6 - enrichissements) ──────────────────────
+    lettreMotivation: {
+      url: { type: String, trim: true, default: null },
+      nomFichier: { type: String, trim: true, default: null },
+      taille: { type: Number, default: null }, // en octets
+      dateDepot: { type: Date, default: null },
+      mimeType: { type: String, default: 'application/pdf' },
+    },
+
+    // ── Convention de stage (Phase 6 - enrichissements) ─────────────────────
+    convention: {
+      url: { type: String, trim: true, default: null },
+      nomFichier: { type: String, trim: true, default: null },
+      taille: { type: Number, default: null },
+      dateDepot: { type: Date, default: null },
+      dateSignature: { type: Date, default: null },
+      statut: {
+        type: String,
+        enum: ['non_deposee', 'deposee', 'approuvee', 'signee'],
+        default: 'non_deposee',
+      },
+      signatureEtudiant: {
+        type: Boolean,
+        default: false,
+      },
+      signatureEntreprise: {
+        type: Boolean,
+        default: false,
+      },
+      signatureUniversite: {
+        type: Boolean,
+        default: false,
+      },
+    },
     entreprise: {
       nom: {
         type: String,

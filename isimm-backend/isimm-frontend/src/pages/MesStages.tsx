@@ -46,6 +46,8 @@ const MesStages = () => {
   const [statusFilter, setStatusFilter] = useState('tous');
   const [typeFilter, setTypeFilter] = useState('tous');
   const [uploadLoading, setUploadLoading] = useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<'etudiant' | 'tuteur' | 'admin' | null>(null);
 
   const handleFileUpload = async (stageId: string, type: 'rapport' | 'attestation', file: File) => {
     const formData = new FormData();
@@ -65,7 +67,17 @@ const MesStages = () => {
     }
   };
 
+  const fetchUserRole = async () => {
+    try {
+      const response = await api.get('/auth/me');
+      setUserRole(response.data.user.role);
+    } catch (err: any) {
+      console.warn('Impossible de récupérer le rôle utilisateur', err);
+    }
+  };
+
   useEffect(() => {
+    fetchUserRole();
     fetchStages();
   }, []);
 
@@ -90,6 +102,22 @@ const MesStages = () => {
 
     return { total, validés, enAttente, enCours };
   }, [stages]);
+
+  const updateStageStatus = async (stageId: string, statut: 'validé' | 'refusé') => {
+    try {
+      setStatusLoading(stageId);
+      await api.put(`/stages/${stageId}/statut`, {
+        statut,
+        commentaire: statut === 'validé' ? 'Validation admin' : 'Rejet admin',
+      });
+      await fetchStages();
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erreur lors de la mise à jour du statut');
+    } finally {
+      setStatusLoading(null);
+    }
+  };
 
   const filteredStages = useMemo(() => {
     return stages.filter((stage) => {
@@ -289,12 +317,34 @@ const MesStages = () => {
                 </div>
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm text-slate-500">{t('stages.tutor')}: {stage.tuteur ? `${stage.tuteur.prenom} ${stage.tuteur.nom}` : t('stages.noTutor')}</p>
-                  <Link
-                    to={`/stages/${stage._id}`}
-                    className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                  >
-                    Voir détails
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {userRole === 'admin' && stage.statut === 'en_attente' && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={statusLoading === stage._id}
+                          onClick={() => updateStageStatus(stage._id, 'validé')}
+                          className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {statusLoading === stage._id ? '...' : 'Valider'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={statusLoading === stage._id}
+                          onClick={() => updateStageStatus(stage._id, 'refusé')}
+                          className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {statusLoading === stage._id ? '...' : 'Refuser'}
+                        </button>
+                      </>
+                    )}
+                    <Link
+                      to={`/stages/${stage._id}`}
+                      className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    >
+                      Voir détails
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

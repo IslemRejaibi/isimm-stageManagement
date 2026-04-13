@@ -12,22 +12,37 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // pour les formulaires
 
 // ─── Import des routes ────────────────────────────────────────────────────────
-const authRoutes      = require('./routes/auth.routes');
-const stageRoutes     = require('./routes/stage.routes');
-const pfeRoutes       = require('./routes/pfe.routes');
-const documentsRoutes = require('./routes/documents.routes');
+const authRoutes               = require('./routes/auth.routes');
+const stageRoutes              = require('./routes/stage.routes');
+const pfeRoutes                = require('./routes/pfe.routes');
+const documentsRoutes          = require('./routes/documents.routes');
+const progressReportRoutes     = require('./routes/progressReport.routes');
+const documentValidationRoutes = require('./routes/documentValidation.routes');
+const evaluationRoutes         = require('./routes/evaluation.routes');
+const validationRoutes         = require('./routes/validation.routes');
+const statisticsRoutes         = require('./routes/statistics.routes');
+const stageEnrichmentRoutes    = require('./routes/stageEnrichment.routes');
+const pfeEnrichmentRoutes      = require('./routes/pfeEnrichment.routes');
 
 // ─── Branchement des routes ───────────────────────────────────────────────────
 //
 // Toutes les routes auth  → /api/auth/register, /api/auth/login, /api/auth/me
 // Toutes les routes stage → /api/stages, /api/stages/:id ...
 // Toutes les routes pfe   → /api/pfe,    /api/pfe/:id    ...
+// Nouvelles routes pour les phases 3-8
 //
-app.use('/api/auth',      authRoutes);
-app.use('/api/stages',    stageRoutes);
-app.use('/api/pfe',       pfeRoutes);
-app.use('/api/documents', documentsRoutes);
-app.use('/uploads',       express.static(path.join(__dirname, 'uploads')));
+app.use('/api/auth',                authRoutes);
+app.use('/api/stages',              stageRoutes);
+app.use('/api/pfe',                 pfeRoutes);
+app.use('/api/documents',           documentsRoutes);
+app.use('/api/progress-reports',    progressReportRoutes);
+app.use('/api/document-validations', documentValidationRoutes);
+app.use('/api/evaluations',         evaluationRoutes);
+app.use('/api/validations',         validationRoutes);
+app.use('/api/statistics',          statisticsRoutes);
+app.use('/api/stage-enrichment',    stageEnrichmentRoutes);
+app.use('/api/pfe-enrichment',      pfeEnrichmentRoutes);
+app.use('/uploads',                 express.static(path.join(__dirname, 'uploads')));
 
 // ─── Route de santé ───────────────────────────────────────────────────────────
 // Tester que le serveur tourne : GET http://localhost:5000/api/health

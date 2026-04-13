@@ -82,7 +82,271 @@ const PFESchema = new mongoose.Schema(
       },
     },
 
-    // ── Statut et workflow ───────────────────────────────────────────────────
+    // ── Détails structurés du PFE (Phase 8 - enrichissements) ─────────────────
+    detailsProjet: {
+      domaine: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      objectifsGeneraux: {
+        type: String,
+        trim: true,
+        maxlength: [1500, 'Maximum 1500 caractères'],
+        default: null,
+      },
+
+      objectifsPedagogiques: {
+        type: String,
+        trim: true,
+        maxlength: [1500, 'Maximum 1500 caractères'],
+        default: null,
+      },
+
+      technologiesUtilisees: [String], // ['Node.js', 'React', 'MongoDB']
+
+      methodologie: {
+        type: String,
+        trim: true,
+        maxlength: [1000, 'Maximum 1000 caractères'],
+        default: null,
+      },
+
+      resultatAttendu: {
+        type: String,
+        trim: true,
+        maxlength: [1000, 'Maximum 1000 caractères'],
+        default: null,
+      },
+
+      // Livrables prévus
+      livrables: [
+        {
+          nom: String,
+          description: String,
+          datePrevisionnelle: Date,
+          statut: {
+            type: String,
+            enum: ['non_commence', 'en_cours', 'termine', 'delivered'],
+            default: 'non_commence',
+          },
+        },
+      ],
+    },
+
+    // ── Planification de soutenance (Phase 8) ──────────────────────────────────
+    soutenance: {
+      dateSoutenance: {
+        type: Date,
+        default: null,
+      },
+
+      lieuSoutenance: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      salleNum: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      heureSoutenance: {
+        type: String,
+        trim: true,
+        match: [/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format HH:MM invalide'],
+        default: null,
+      },
+
+      dureeEstimee: {
+        type: Number, // en minutes
+        default: 30,
+      },
+
+      // URLs de visioconférence (si soutenance hybride)
+      urlVisio: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      statut: {
+        type: String,
+        enum: ['non_planifiee', 'planifiee', 'annulee', 'reportee', 'effectuee'],
+        default: 'non_planifiee',
+      },
+
+      commentairesOrganisation: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+    },
+
+    // ── Rapports et documents (Phase 8) ──────────────────────────────────────
+    rapportIntermediaire: {
+      url: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      nomFichier: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      taille: {
+        type: Number,
+        default: null,
+      },
+      dateDepot: {
+        type: Date,
+        default: null,
+      },
+      statut: {
+        type: String,
+        enum: ['non_depose', 'depose', 'approuve', 'rejete'],
+        default: 'non_depose',
+      },
+    },
+
+    rapportFinal: {
+      url: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      nomFichier: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      taille: {
+        type: Number,
+        default: null,
+      },
+      dateDepot: {
+        type: Date,
+        default: null,
+      },
+      statut: {
+        type: String,
+        enum: ['non_depose', 'depose', 'approuve', 'rejete'],
+        default: 'non_depose',
+      },
+    },
+
+    // Présentation PowerPoint / slides
+    presentation: {
+      url: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      nomFichier: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      dateDepot: {
+        type: Date,
+        default: null,
+      },
+    },
+
+    // Code source / dépôt Git
+    codeSource: {
+      urlRepository: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+      descriptionRepo: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+    },
+
+    // ── Évaluation de soutenance (Phase 8) ────────────────────────────────────
+    evaluationSoutenance: {
+      // Note générale
+      note: {
+        type: Number,
+        min: 0,
+        max: 20,
+        default: null,
+      },
+
+      // Critères d'évaluation
+      clartePresentation: {
+        note: { type: Number, min: 0, max: 20, default: null },
+        commentaire: String,
+      },
+
+      qualiteTechnique: {
+        note: { type: Number, min: 0, max: 20, default: null },
+        commentaire: String,
+      },
+
+      innovationOriginalite: {
+        note: { type: Number, min: 0, max: 20, default: null },
+        commentaire: String,
+      },
+
+      reponseQuestions: {
+        note: { type: Number, min: 0, max: 20, default: null },
+        commentaire: String,
+      },
+
+      autonomieRigueur: {
+        note: { type: Number, min: 0, max: 20, default: null },
+        commentaire: String,
+      },
+
+      // Observations générales
+      pointsForts: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      axesAmelioration: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      // Recommandation du jury
+      recommandation: {
+        type: String,
+        enum: ['non_valide', 'valide_conditions', 'valide', 'valide_mention'],
+        default: null,
+      },
+
+      // Feedback collectif
+      feedbackJury: {
+        type: String,
+        trim: true,
+        default: null,
+      },
+
+      dateEvaluation: {
+        type: Date,
+        default: null,
+      },
+
+      evaluePar: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Généralement le coordinateur ou un représentant du jury
+        default: null,
+      },
+    },
+
+    // ── Statut et validation (Phase 8) ───────────────────────────────────────
     statut: {
       type: String,
       enum: {
@@ -115,7 +379,7 @@ const PFESchema = new mongoose.Schema(
       },
     ],
 
-    // ── Note et évaluation ───────────────────────────────────────────────────
+    // ── Note et mention ─────────────────────────────────────────────────────
     note: {
       type: Number,
       min: [0, 'La note ne peut pas être inférieure à 0'],
@@ -129,55 +393,14 @@ const PFESchema = new mongoose.Schema(
       default: null,
     },
 
-    dateSoutenance: {
-      type: Date,
+    creditsECTS: {
+      type: Number,
+      min: 0,
+      max: 30,
       default: null,
     },
 
-    // ── Rapport intermédiaire PDF ───────────────────────────────────────────
-    rapportIntermediaire: {
-      url: {
-        type: String,
-        trim: true,
-        default: null,
-      },
-      nomFichier: {
-        type: String,
-        trim: true,
-        default: null,
-      },
-      taille: {
-        type: Number,
-        default: null,
-      },
-      dateDepot: {
-        type: Date,
-        default: null,
-      },
-    },
-    // ── Rapport final PDF ─────────────────────────────────────────────────────
-    rapportFinal: {
-      url: {
-        type: String,
-        trim: true,
-        default: null,
-      },
-      nomFichier: {
-        type: String,
-        trim: true,
-        default: null,
-      },
-      taille: {
-        type: Number,
-        default: null,
-      },
-      dateDepot: {
-        type: Date,
-        default: null,
-      },
-    },
-
-    // ── Commentaires encadrant ───────────────────────────────────────────────
+    // ── Commentaires encadrant et jury ───────────────────────────────────────
     commentaires: [
       {
         auteur: {
