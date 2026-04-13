@@ -34,6 +34,7 @@ exports.createProgressReport = async (req, res) => {
       return res.status(400).json({ message: `Un rapport existe déjà pour la semaine ${semaine}` });
     }
 
+    const statut = ['brouillon', 'soumis'].includes(req.body.statut) ? req.body.statut : 'brouillon';
     const rapportData = {
       stage: stageId,
       semaine,
@@ -43,8 +44,12 @@ exports.createProgressReport = async (req, res) => {
       observations,
       auteur: req.user.id,
       dateRemisePrevu: new Date(), // ou calculé depuis les dates du stage
-      statut: 'brouillon',
+      statut,
     };
+
+    if (statut === 'soumis') {
+      rapportData.dateRemiseReel = new Date();
+    }
 
     const rapport = new ProgressReport(rapportData);
     await rapport.save();
@@ -58,6 +63,22 @@ exports.createProgressReport = async (req, res) => {
     });
   } catch (err) {
     console.error('Erreur POST /progress-reports :', err);
+
+    if (err.name === 'ValidationError') {
+      const validationMessages = Object.values(err.errors).map((fieldErr) => fieldErr.message);
+      return res.status(400).json({
+        message: 'Données de rapport invalides',
+        error: validationMessages.join(' ; '),
+      });
+    }
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        message: 'Un rapport existe déjà pour cette semaine',
+        error: err.message,
+      });
+    }
+
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 };
@@ -145,9 +166,9 @@ exports.addTuteurComment = async (req, res) => {
       return res.status(404).json({ message: 'Rapport non trouvé' });
     }
 
-    // Vérifier que l'utilisateur est tuteur de ce stage
+    // Vérifier que l'utilisateur est tuteur ou enseignant de ce stage
     if (
-      req.user.role === 'tuteur' &&
+      (req.user.role === 'tuteur' || req.user.role === 'enseignant') &&
       rapport.stage.tuteur.toString() !== req.user.id
     ) {
       return res.status(403).json({ message: 'Accès refusé : vous n\'êtes pas tuteur de ce stage' });
@@ -161,9 +182,25 @@ exports.addTuteurComment = async (req, res) => {
     rapport.statut = 'vu_tuteur';
     await rapport.save();
 
+    const stage = await Stage.findById(rapport.stage._id || rapport.stage);
+    let transitionMessage = '';
+
+    if (stage && stage.nbSemainesAttendues) {
+      const validatedReportsCount = await ProgressReport.countDocuments({
+        stage: stage._id,
+        statut: 'vu_tuteur',
+      });
+
+      if (validatedReportsCount >= stage.nbSemainesAttendues && stage.statut === 'en_cours') {
+        await stage.changerStatut('terminé', req.user.id, `Tous les ${stage.nbSemainesAttendues} rapports validés par le tuteur`);
+        transitionMessage = ' Le stage est maintenant passé automatiquement à terminé.';
+      }
+    }
+
     res.status(200).json({
-      message: 'Commentaire du tuteur ajouté',
+      message: `Commentaire du tuteur ajouté.${transitionMessage}`,
       rapport,
+      stage,
     });
   } catch (err) {
     console.error('Erreur PATCH /progress-reports/:id/comment-tuteur :', err);

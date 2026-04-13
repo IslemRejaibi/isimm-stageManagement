@@ -31,7 +31,7 @@ router.get('/', auth, getProgressReports);
 // PATCH /api/progress-reports/:id/comment-tuteur
 // Ajouter un commentaire du tuteur
 // ─────────────────────────────────────────────────────────────────────────────
-router.patch('/:id/comment-tuteur', auth, autoriser('tuteur', 'admin'), addTuteurComment);
+router.patch('/:id/comment-tuteur', auth, autoriser('tuteur', 'enseignant', 'admin'), addTuteurComment);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DELETE /api/progress-reports/:id

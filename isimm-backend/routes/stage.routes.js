@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Stage = require('../models/Stage');
+const User = require('../models/User');
 const { auth, autoriser } = require('../middleware/auth.middleware');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -93,6 +94,7 @@ router.post('/', auth, autoriser('etudiant', 'admin'), async (req, res) => {
       anneeUniversitaire,
       dateDebut,
       dateFin,
+      detailsStage,
     } = req.body;
 
     // L'étudiant crée toujours son propre stage
@@ -110,6 +112,7 @@ router.post('/', auth, autoriser('etudiant', 'admin'), async (req, res) => {
       anneeUniversitaire,
       dateDebut,
       dateFin,
+      detailsStage,
       etudiant: etudiantId,
       statut: 'en_attente',
     });
@@ -175,15 +178,33 @@ router.put('/:id', auth, async (req, res) => {
       }
     });
 
+    let shouldMoveToInProgress = false;
+
     if (req.user.role === 'admin' || req.user.role === 'tuteur') {
       champsAdmin.forEach((champ) => {
         if (req.body[champ] !== undefined) {
           stage[champ] = req.body[champ];
         }
       });
+
+      if (req.body.tuteurEmail) {
+        const tuteurEmail = req.body.tuteurEmail.trim().toLowerCase();
+        const tuteurUser = await User.findOne({ email: tuteurEmail, role: { $in: ['tuteur', 'enseignant'] } });
+        if (!tuteurUser) {
+          return res.status(404).json({ message: 'Tuteur introuvable pour cet email' });
+        }
+        stage.tuteur = tuteurUser._id;
+        if (stage.statut === 'validé') {
+          shouldMoveToInProgress = true;
+        }
+      }
     }
 
     await stage.save(); // déclenche les middlewares pre('save') — mention auto
+
+    if (shouldMoveToInProgress || (stage.statut === 'validé' && stage.tuteur)) {
+      await stage.changerStatut('en_cours', req.user.id, 'Tuteur assigné après validation');
+    }
 
     await stage.populate('etudiant', 'nom prenom email');
     await stage.populate('tuteur',   'nom prenom email');
@@ -226,6 +247,13 @@ router.put('/:id/statut', auth, autoriser('tuteur', 'admin'), async (req, res) =
     // changerStatut() est la méthode d'instance déclarée dans Stage.js
     // elle met à jour statut + historiqueStatuts + save() en une seule ligne
     await stage.changerStatut(statut, req.user.id, commentaire);
+
+    if (statut === 'validé') {
+      stage.creditsECTS = stage.creditsECTS || 6;
+      stage.attestationOfficielle = stage.attestationOfficielle || {};
+      stage.attestationOfficielle.dateEmission = new Date();
+      await stage.save();
+    }
 
     res.status(200).json({
       message: `Statut mis à jour : ${statut}`,

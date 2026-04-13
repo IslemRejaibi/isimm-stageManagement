@@ -20,16 +20,77 @@ const CreateStage = () => {
   const [type, setType] = useState('stage_pfe');
   const [specialite, setSpecialite] = useState('GL');
   const [annee, setAnnee] = useState('2025-2026');
+  const [missionsPrevues, setMissionsPrevues] = useState('');
+  const [technologies, setTechnologies] = useState('');
+  const [objectifsPedagogiques, setObjectifsPedagogiques] = useState('');
+  const [lettreFile, setLettreFile] = useState<File | null>(null);
+  const [conventionFile, setConventionFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [nbSemaines, setNbSemaines] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  // Calculer le nombre de semaines quand les dates changent
+  const calculateWeeks = (start: string, end: string) => {
+    if (!start || !end) return null;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (endDate <= startDate) return null;
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.ceil(diffDays / 7);
+  };
+
+  // Gestionnaire pour la date de début
+  const handleDateDebutChange = (value: string) => {
+    setDateDebut(value);
+    if (value && dateFin) {
+      const weeks = calculateWeeks(value, dateFin);
+      setNbSemaines(weeks);
+    } else {
+      setNbSemaines(null);
+    }
+  };
+
+  // Gestionnaire pour la date de fin
+  const handleDateFinChange = (value: string) => {
+    setDateFin(value);
+    if (dateDebut && value) {
+      const weeks = calculateWeeks(dateDebut, value);
+      setNbSemaines(weeks);
+    } else {
+      setNbSemaines(null);
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    // Validation des dates
+    if (!dateDebut || !dateFin) {
+      setError('Les dates de début et de fin sont obligatoires');
+      return;
+    }
+
+    const startDate = new Date(dateDebut);
+    const endDate = new Date(dateFin);
+
+    if (endDate <= startDate) {
+      setError('La date de fin doit être après la date de début');
+      return;
+    }
+
+    const calculatedWeeks = calculateWeeks(dateDebut, dateFin);
+    if (!calculatedWeeks || calculatedWeeks <= 0) {
+      setError('La durée du stage doit être d\'au moins 1 semaine');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
-      await api.post('/stages', {
+
+      const stageResponse = await api.post('/stages', {
         titre,
         description,
         entreprise: { nom: entreprise },
@@ -38,7 +99,35 @@ const CreateStage = () => {
         type,
         specialite,
         anneeUniversitaire: annee,
+        nbSemainesAttendues: calculatedWeeks, // Stocker le nombre de semaines calculé
+        detailsStage: {
+          missionsPrevues,
+          technologiesUtilisees: technologies
+            .split(',')
+            .map((tech) => tech.trim())
+            .filter(Boolean),
+          objectifsPedagogiques,
+        },
       });
+
+      const stageId = stageResponse.data.stage._id;
+
+      if (lettreFile) {
+        const formData = new FormData();
+        formData.append('file', lettreFile);
+        await api.post(`/stage-enrichment/${stageId}/upload-letter`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
+      if (conventionFile) {
+        const formData = new FormData();
+        formData.append('file', conventionFile);
+        await api.post(`/stage-enrichment/${stageId}/upload-convention`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
       navigate('/stages');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Impossible de créer la demande');
@@ -92,6 +181,39 @@ const CreateStage = () => {
             />
           </label>
 
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Missions prévues</span>
+            <textarea
+              value={missionsPrevues}
+              onChange={(e) => setMissionsPrevues(e.target.value)}
+              rows={3}
+              className="mt-2 input-field"
+              placeholder="Décrivez les tâches et objectifs du stage"
+            />
+          </label>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Technologies / outils</span>
+              <input
+                value={technologies}
+                onChange={(e) => setTechnologies(e.target.value)}
+                placeholder="Node.js, React, MongoDB"
+                className="mt-2 input-field"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Objectifs pédagogiques</span>
+              <textarea
+                value={objectifsPedagogiques}
+                onChange={(e) => setObjectifsPedagogiques(e.target.value)}
+                rows={3}
+                className="mt-2 input-field"
+                placeholder="Compétences visées, résultats attendus"
+              />
+            </label>
+          </div>
+
           <div className="grid gap-6 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-medium text-slate-700">Type de stage</span>
@@ -111,13 +233,13 @@ const CreateStage = () => {
             </label>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-3">
             <label className="block">
               <span className="text-sm font-medium text-slate-700">Date de début</span>
               <input
                 type="date"
                 value={dateDebut}
-                onChange={(e) => setDateDebut(e.target.value)}
+                onChange={(e) => handleDateDebutChange(e.target.value)}
                 required
                 className="mt-2 input-field"
               />
@@ -127,10 +249,19 @@ const CreateStage = () => {
               <input
                 type="date"
                 value={dateFin}
-                onChange={(e) => setDateFin(e.target.value)}
+                onChange={(e) => handleDateFinChange(e.target.value)}
                 required
+                min={dateDebut || undefined}
                 className="mt-2 input-field"
               />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Durée estimée</span>
+              <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span className="text-sm text-slate-700">
+                  {nbSemaines ? `${nbSemaines} semaine${nbSemaines > 1 ? 's' : ''}` : 'À calculer'}
+                </span>
+              </div>
             </label>
           </div>
 
@@ -142,6 +273,26 @@ const CreateStage = () => {
                 onChange={(e) => setAnnee(e.target.value)}
                 required
                 className="mt-2 input-field"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Lettre de motivation (optionnel)</span>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setLettreFile(e.target.files?.[0] || null)}
+                className="mt-2"
+              />
+            </label>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Convention de stage (optionnel)</span>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setConventionFile(e.target.files?.[0] || null)}
+                className="mt-2"
               />
             </label>
           </div>

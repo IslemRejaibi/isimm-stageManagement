@@ -45,27 +45,9 @@ const MesStages = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('tous');
   const [typeFilter, setTypeFilter] = useState('tous');
-  const [uploadLoading, setUploadLoading] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<'etudiant' | 'tuteur' | 'admin' | null>(null);
 
-  const handleFileUpload = async (stageId: string, type: 'rapport' | 'attestation', file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
-    try {
-      setUploadLoading(stageId);
-      await api.post(`/stages/${stageId}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      await fetchStages(); // Refresh data
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors du téléchargement');
-    } finally {
-      setUploadLoading(null);
-    }
-  };
 
   const fetchUserRole = async () => {
     try {
@@ -238,36 +220,15 @@ const MesStages = () => {
                   </div>
                 </div>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  <div>
+                    <div>
                     <p className="text-sm text-slate-500">{t('stages.report')}</p>
                     <p className="mt-2 text-base text-slate-900">
                       {stage.rapport?.url ? (
-                        <div className="flex flex-col gap-2">
-                          <a href={stage.rapport.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {stage.rapport.nomFichier || t('stages.reportUpload')}
-                          </a>
-                          <label className="inline-flex cursor-pointer items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
-                            {t('stages.reportReplace')}
-                            <input
-                              type="file"
-                              hidden
-                              accept=".pdf,.doc,.docx"
-                              onChange={(e) => e.target.files && handleFileUpload(stage._id, 'rapport', e.target.files[0])}
-                              disabled={uploadLoading === stage._id}
-                            />
-                          </label>
-                        </div>
+                        <a href={stage.rapport.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {stage.rapport.nomFichier || t('stages.reportUploaded')}
+                        </a>
                       ) : (
-                        <label className="inline-flex cursor-pointer items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
-                          {t('stages.reportUpload')}
-                          <input
-                            type="file"
-                            hidden
-                            accept=".pdf,.doc,.docx"
-                            onChange={(e) => e.target.files && handleFileUpload(stage._id, 'rapport', e.target.files[0])}
-                            disabled={uploadLoading === stage._id}
-                          />
-                        </label>
+                        <span className="text-slate-500">{t('stages.noReport')}</span>
                       )}
                     </p>
                   </div>
@@ -275,32 +236,11 @@ const MesStages = () => {
                     <p className="text-sm text-slate-500">{t('stages.attestation')}</p>
                     <p className="mt-2 text-base text-slate-900">
                       {stage.attestation?.url ? (
-                        <div className="flex flex-col gap-2">
-                          <a href={stage.attestation.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {t('stages.attestation')}
-                          </a>
-                          <label className="inline-flex cursor-pointer items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
-                            {t('stages.attestationReplace')}
-                            <input
-                              type="file"
-                              hidden
-                              accept=".pdf,.doc,.docx"
-                              onChange={(e) => e.target.files && handleFileUpload(stage._id, 'attestation', e.target.files[0])}
-                              disabled={uploadLoading === stage._id}
-                            />
-                          </label>
-                        </div>
+                        <a href={stage.attestation.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {t('stages.attestationAvailable')}
+                        </a>
                       ) : (
-                        <label className="inline-flex cursor-pointer items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
-                          {t('stages.attestationUpload')}
-                          <input
-                            type="file"
-                            hidden
-                            accept=".pdf,.doc,.docx"
-                            onChange={(e) => e.target.files && handleFileUpload(stage._id, 'attestation', e.target.files[0])}
-                            disabled={uploadLoading === stage._id}
-                          />
-                        </label>
+                        <span className="text-slate-500">{t('stages.noAttestation')}</span>
                       )}
                     </p>
                   </div>

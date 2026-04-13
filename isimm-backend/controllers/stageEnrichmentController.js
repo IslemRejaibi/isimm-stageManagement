@@ -1,4 +1,5 @@
 const Stage = require('../models/Stage');
+const DocumentValidation = require('../models/DocumentValidation');
 const path = require('path');
 const fs = require('fs');
 
@@ -159,6 +160,74 @@ exports.uploadConvention = async (req, res) => {
     });
   } catch (err) {
     console.error('Erreur POST /stages/:id/upload-convention :', err);
+    res.status(500).json({ message: 'Erreur serveur', error: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/stage-enrichment/:id/upload-stage-document
+// Uploader un rapport ou une attestation et créer un contrôle de validation
+// Accessible : étudiant, admin
+// ─────────────────────────────────────────────────────────────────────────────
+exports.uploadStageDocument = async (req, res) => {
+  try {
+    const { typeDocument } = req.body;
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucun fichier fourni' });
+    }
+    if (!['rapport_stage', 'attestation_stage'].includes(typeDocument)) {
+      return res.status(400).json({ message: 'Type de document invalide' });
+    }
+
+    const stage = await Stage.findById(req.params.id);
+    if (!stage) {
+      return res.status(404).json({ message: 'Stage non trouvé' });
+    }
+
+    if (req.user.role === 'etudiant' && stage.etudiant.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Accès refusé' });
+    }
+
+    const url = `/uploads/stage-documents/${req.file.filename}`;
+    if (typeDocument === 'rapport_stage') {
+      stage.rapport = {
+        url,
+        nomFichier: req.file.originalname,
+        taille: req.file.size,
+        dateDepot: new Date(),
+      };
+    } else if (typeDocument === 'attestation_stage') {
+      stage.attestation = {
+        url,
+        dateDepot: new Date(),
+      };
+    }
+
+    await stage.save();
+
+    const validation = new DocumentValidation({
+      stage: stage._id,
+      typeDocument,
+      document: {
+        url,
+        nomFichier: req.file.originalname,
+        taille: req.file.size,
+        mimeType: req.file.mimetype,
+      },
+      soumisJointu: req.user.role === 'admin' ? 'admin' : 'etudiant',
+      dateRemiseInitiale: new Date(),
+      statut: 'soumis',
+    });
+
+    await validation.save();
+
+    res.status(201).json({
+      message: 'Document soumis et envoyé pour validation',
+      stage,
+      validation,
+    });
+  } catch (err) {
+    console.error('Erreur POST /stage-enrichment/:id/upload-stage-document :', err);
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 };

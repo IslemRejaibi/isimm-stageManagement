@@ -212,6 +212,13 @@ const StageSchema = new mongoose.Schema(
       required: [true, 'La date de fin est obligatoire'],
     },
 
+    // ── Nombre de semaines attendues (calculé lors de la création) ───────────
+    nbSemainesAttendues: {
+      type: Number,
+      min: [1, 'Le stage doit durer au moins 1 semaine'],
+      default: null,
+    },
+
     // ── Statut ────────────────────────────────────────────────────────────────
     statut: {
       type: String,
@@ -257,6 +264,18 @@ const StageSchema = new mongoose.Schema(
     attestation: {
       url:        { type: String, trim: true, default: null },
       dateDepot:  { type: Date, default: null },
+    },
+
+    // ── Attestation officielle générée après validation finale
+    attestationOfficielle: {
+      url: { type: String, trim: true, default: null },
+      dateEmission: { type: Date, default: null },
+    },
+
+    creditsECTS: {
+      type: Number,
+      min: [0, 'Le nombre de crédits ne peut pas être négatif'],
+      default: 0,
     },
 
     // ── Commentaires ──────────────────────────────────────────────────────────

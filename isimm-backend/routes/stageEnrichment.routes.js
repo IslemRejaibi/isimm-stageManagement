@@ -6,6 +6,7 @@ const {
   updateStageDetails,
   uploadLetterMotivation,
   uploadConvention,
+  uploadStageDocument,
   signConvention,
   getEnrichedStageSummary,
 } = require('../controllers/stageEnrichmentController');
@@ -22,6 +23,8 @@ const storage = multer.diskStorage({
       folder = 'uploads/motivation_letters/';
     } else if (req.path.includes('convention')) {
       folder = 'uploads/conventions/';
+    } else if (req.path.includes('upload-stage-document')) {
+      folder = 'uploads/stage-documents/';
     }
 
     // Créer le répertoire s'il n'existe pas
@@ -72,6 +75,13 @@ router.post('/:id/upload-letter', auth, upload.single('file'), uploadLetterMotiv
 // Uploader la convention de stage
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/:id/upload-convention', auth, upload.single('file'), uploadConvention);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/stage-enrichment/:id/upload-stage-document
+// Uploader un rapport ou une attestation de stage
+// Accessible : étudiant, admin
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/:id/upload-stage-document', auth, upload.single('file'), uploadStageDocument);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PATCH /api/stage-enrichment/:id/convention/sign
