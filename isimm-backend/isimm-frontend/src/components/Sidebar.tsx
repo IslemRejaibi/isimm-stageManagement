@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext.tsx';
+import logo from '../assets/isimm-logo.png';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -15,10 +16,12 @@ const Sidebar = () => {
       <div className="flex h-full flex-col justify-between p-6">
         <div>
           <div className="mb-10 flex items-center gap-3 rounded-3xl bg-white/15 p-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber text-navy font-bold">U</div>
+            <div className="h-12 w-12 overflow-hidden rounded-2xl bg-white">
+              <img src={logo} alt="Logo ISIMM" className="h-full w-full object-contain" />
+            </div>
             <div>
               <h1 className="text-xl font-semibold text-white">Université ISIMM</h1>
-              <p className="text-xs uppercase tracking-[0.3em] text-amber/90">Portail étudiant</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/80">Portail étudiant</p>
             </div>
           </div>
 
@@ -41,7 +44,7 @@ const Sidebar = () => {
                   }`
                 }
               >
-                <span className="h-2.5 w-2.5 rounded-full bg-amber" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white" />
                 {link.label}
               </NavLink>
             ))}

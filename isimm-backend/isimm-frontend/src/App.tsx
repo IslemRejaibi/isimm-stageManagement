@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import MesStages from './pages/MesStages';
 import MonPFE from './pages/MonPFE';
 import PfeDetails from './pages/PfeDetails';
+import CreatePFE from './pages/CreatePFE';
 import Documents from './pages/Documents';
 import Notifications from './pages/Notifications';
 import MonProfil from './pages/MonProfil';
@@ -32,6 +33,7 @@ function App() {
         <Route path="/stages/new" element={<CreateStage />} />
         <Route path="/stages/:id" element={<StageDetails />} />
         <Route path="/pfe" element={<MonPFE />} />
+        <Route path="/pfe/new" element={<CreatePFE />} />
         <Route path="/pfe/:id" element={<PfeDetails />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/notifications" element={<Notifications />} />

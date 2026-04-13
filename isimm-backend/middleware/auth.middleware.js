@@ -49,7 +49,7 @@ const auth = async (req, res, next) => {
     // ── 5. Attacher l'utilisateur à req pour les routes suivantes ────────────
     // Toutes les routes protégées peuvent accéder à req.user
     req.user = {
-      id:    user._id,
+      id:    user._id.toString(),
       role:  user.role,
       email: user.email,
       nom:   user.nom,
